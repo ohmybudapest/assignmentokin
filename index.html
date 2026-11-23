@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tugas P3MD — Prioritas &amp; Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+  <style>
+    :root,
+    [data-theme="light"] {
+      --bg: #f6f7f9;
+      --surface: #ffffff;
+      --surface-subtle: #f1f3f6;
+      --border: #e5e7eb;
+      --border-strong: #d1d5db;
+
+      --text: #111827;
+      --text-secondary: #4b5563;
+      --text-muted: #6b7280;
+
+      --primary: #18181b;
+      --primary-hover: #27272a;
+      --primary-ink: #ffffff;
+
+      --accent: #2563eb;
+      --p1: #dc2626;
+      --p1-bg: #fef2f2;
+      --p2: #d97706;
+      --p3: #2563eb;
+      --p4: #6b7280;
+      --success: #16a34a;
+
+      --shadow-card: 0 1px 2px rgba(17, 24, 39, 0.04);
+      --shadow-menu: 0 10px 30px rgba(17, 24, 39, 0.12);
+    }
+
+    [data-theme="dark"] {
+      --bg: #0f1115;
+      --surface: #171a21;
+      --surface-subtle: #1f242d;
+      --border: #262c36;
+      --border-strong: #343c4a;
+
+      --text: #f3f4f6;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+
+      --primary: #f3f4f6;
+      --primary-hover: #ffffff;
+      --primary-ink: #111827;
+
+      --accent: #60a5fa;
+      --p1: #f87171;
+      --p1-bg: rgba(248, 113, 113, 0.12);
+      --p2: #fbbf24;
+      --p3: #60a5fa;
+      --p4: #9ca3af;
+      --success: #4ade80;
+
+      --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.25);
+      --shadow-menu: 0 12px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 32px 18px 64px;
+    }
+    .page.wide { max-width: 1080px; }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .title-line {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      cursor: pointer;
+    }
+    .header h1:hover { opacity: 0.78; }
+    .class-tag { font-size: 12.5px; font-weight: 500; color: var(--text-muted); }
+    .header-sub { margin: 4px 0 0; font-size: 13.5px; color: var(--text-secondary); }
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 9px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: background 0.14s ease, border-color 0.14s ease;
+      white-space: nowrap;
+    }
+    .btn-primary { background: var(--primary); color: var(--primary-ink); }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--text);
+      border-color: var(--border);
+      box-shadow: var(--shadow-card);
+    }
+    .btn-secondary:hover { border-color: var(--border-strong); background: var(--surface-subtle); }
+    .btn-secondary.is-synced { color: var(--success); }
+    .btn-secondary.is-syncing .sync-icon { animation: spin 0.85s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    .btn-icon {
+      width: 36px;
+      padding: 0;
+      background: var(--surface);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-card);
+    }
+    .btn-icon:hover { color: var(--text); border-color: var(--border-strong); }
+    .btn-danger-text { background: transparent; color: var(--p1); padding: 0 10px; }
+    .btn-danger-text:hover { background: var(--p1-bg); }
+
+    /* Menu */
+    .menu-wrap { position: relative; }
+    .dropdown-menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      min-width: 220px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 6px;
+      box-shadow: var(--shadow-menu);
+      display: none;
+      z-index: 40;
+    }
+    .dropdown-menu.open { display: block; }
+    .menu-item {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--text);
+      cursor: pointer;
+      display: block;
+    }
+    .menu-item:hover { background: var(--surface-subtle); }
+    .menu-item.danger { color: var(--p1); }
+    .menu-sep { height: 1px; background: var(--border); margin: 5px 4px; }
+
+    /* Progress */
+    .progress-wrap { margin-bottom: 20px; }
+    .progress-bar { height: 5px; background: var(--border); border-radius: 999px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--primary); border-radius: 999px; transition: width 0.3s ease; }
+
+    /* Nav */
+    .nav-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .seg-tabs { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+    .seg-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 34px;
+      padding: 0 12px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 13.5px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .seg-tab:hover { color: var(--text); background: var(--surface-subtle); }
+    .seg-tab.active {
+      background: var(--surface);
+      color: var(--text);
+      border-color: var(--border);
+      font-weight: 600;
+      box-shadow: var(--shadow-card);
+    }
+    .seg-tab .count { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+
+    .view-switch {
+      display: inline-flex;
+      background: var(--surface-subtle);
+      padding: 3px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+    }
+    .view-btn {
+      height: 28px;
+      padding: 0 11px;
+      border: none;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .view-btn.active {
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 600;
+      box-shadow: var(--shadow-card);
+    }
+
+    /* Sections & Rows */
+    .group-section { margin-bottom: 26px; }
+    .group-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+      padding: 0 2px;
+    }
+    .group-title {
+      margin: 0;
+      font-size: 12.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+    .group-note { font-size: 12.5px; color: var(--text-muted); }
+
+    .task-stack {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+    .task-row { border-bottom: 1px solid var(--border); }
+    .task-row:last-child { border-bottom: none; }
+
+    .task-row-summary {
+      display: flex;
+      align-items: flex-start;
+      gap: 13px;
+      padding: 15px 18px;
+      cursor: pointer;
+    }
+    .task-row-summary:hover { background: var(--surface-subtle); }
+    .task-row.is-done .task-name { text-decoration: line-through; color: var(--text-muted); }
+    .task-row.is-done .task-row-summary { opacity: 0.65; }
+
+    .check-circle {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 1.8px solid var(--border-strong);
+      background: transparent;
+      flex-shrink: 0;
+      margin-top: 2px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #ffffff;
+      padding: 0;
+    }
+    .check-circle:hover { border-color: var(--primary); }
+    .check-circle.checked { background: var(--success); border-color: var(--success); }
+
+    .task-center { flex: 1; min-width: 0; }
+    .task-top-line { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .course-code {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: var(--surface-subtle);
+      padding: 1px 6px;
+      border-radius: 5px;
+      flex-shrink: 0;
+    }
+    .task-name { font-size: 14.5px; font-weight: 600; color: var(--text); line-height: 1.35; }
+    .task-subline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+    .priority-dot-label { display: inline-flex; align-items: center; gap: 5px; font-weight: 500; }
+    .p-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+    .p-dot.p1 { background: var(--p1); }
+    .p-dot.p2 { background: var(--p2); }
+    .p-dot.p3 { background: var(--p3); }
+    .p-dot.p4 { background: var(--p4); }
+    .p-text-1 { color: var(--p1); }
+    .p-text-2 { color: var(--p2); }
+    .p-text-3 { color: var(--p3); }
+    .p-text-4 { color: var(--text-muted); }
+    .gcr-done-tag { color: var(--success); font-weight: 500; }
+    .sep { opacity: 0.45; }
+
+    .task-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      text-align: right;
+      margin-top: 1px;
+    }
+    .due-text { font-size: 12.5px; font-weight: 500; color: var(--text-secondary); white-space: nowrap; }
+    .due-text.urgent { color: var(--p1); }
+    .due-text.warn { color: var(--p2); }
+    .chevron { color: var(--text-muted); transition: transform 0.18s ease; flex-shrink: 0; }
+    .task-row.is-open .chevron { transform: rotate(180deg); }
+
+    .task-details { display: none; padding: 0 18px 16px 51px; }
+    .task-row.is-open .task-details { display: block; }
+    .detail-box { padding-top: 10px; border-top: 1px solid var(--border); }
+    .detail-note { margin: 0 0 10px; font-size: 13px; color: var(--text-secondary); line-height: 1.55; }
+    .detail-meta { font-size: 12.5px; color: var(--text-muted); margin: 0 0 12px; }
+
+    .subtask-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    .subtask-item { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; cursor: pointer; }
+    .subtask-item input { margin: 3px 0 0; accent-color: var(--primary); cursor: pointer; }
+    .subtask-item.done span { text-decoration: line-through; color: var(--text-muted); }
+
+    .detail-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .mini-select, .mini-btn {
+      height: 30px;
+      padding: 0 10px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .mini-select:hover, .mini-btn:hover {
+      border-color: var(--border-strong);
+      color: var(--text);
+      background: var(--surface-subtle);
+    }
+    .mini-btn.accent { color: var(--accent); }
+
+    .team-toggle-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 16px;
+      border-radius: 12px;
+      border: 1px dashed var(--border-strong);
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .team-toggle-btn:hover { background: var(--surface); color: var(--text); }
+
+    /* Board View */
+    .board-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      align-items: start;
+    }
+    .board-col {
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+    }
+    .board-col-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      padding: 0 2px;
+    }
+    .board-col-name { font-size: 12.5px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    .board-col-count { font-size: 12px; color: var(--text-muted); }
+    .board-cards { display: flex; flex-direction: column; gap: 8px; }
+    .board-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 12px;
+      box-shadow: var(--shadow-card);
+    }
+    .board-card.is-done { opacity: 0.58; }
+    .board-card-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 6px; }
+    .board-card-title { margin: 0 0 6px; font-size: 13.5px; font-weight: 600; line-height: 1.35; }
+    .board-card.is-done .board-card-title { text-decoration: line-through; color: var(--text-muted); }
+    .board-card-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 9px; }
+    .board-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+
+    .empty-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 36px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13.5px;
+    }
+
+    .footer {
+      margin-top: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 24, 39, 0.48);
+      backdrop-filter: blur(3px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 100;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: var(--shadow-menu);
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-header h2 { margin: 0; font-size: 16px; font-weight: 600; }
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 22px;
+      line-height: 1;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+    .close-btn:hover { background: var(--surface-subtle); color: var(--text); }
+    .modal-body { padding: 18px 20px 20px; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .field { margin-bottom: 12px; }
+    .field label { display: block; font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 5px; }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13.5px;
+      outline: none;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+    .modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .modal-footer-right { display: flex; gap: 8px; margin-left: auto; }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translate(-50%, 14px);
+      background: var(--primary);
+      color: var(--primary-ink);
+      padding: 10px 16px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: var(--shadow-menu);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.2s ease;
+      z-index: 200;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    @media (max-width: 900px) { .board-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 640px) {
+      .page { padding: 18px 14px 48px; }
+      .task-row-summary { padding: 13px 14px; }
+      .task-details { padding: 0 14px 14px 14px; }
+      .task-right { flex-direction: column; align-items: flex-end; gap: 4px; }
+      .board-grid, .field-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="header-left">
+        <div class="title-line">
+          <h1 id="weekTitle" title="Klik untuk ubah minggu">Tugas Week 12</h1>
+          <span class="class-tag">Kelas B · Sindikat 3</span>
+        </div>
+        <p class="header-sub" id="headerSummary">Memuat tugas...</p>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn btn-secondary" id="btnSyncGcr" title="Sinkronkan langsung dengan Google Classroom">
+          <svg class="sync-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+          <span id="syncBtnLabel">Sync GCR</span>
+        </button>
+
+        <button class="btn btn-primary" id="btnAddTask">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>Tambah</span>
+        </button>
+
+        <div class="menu-wrap">
+          <button class="btn btn-icon" id="btnMoreMenu" aria-label="Menu lainnya">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+          </button>
+          <div class="dropdown-menu" id="moreMenu" role="menu">
+            <button type="button" class="menu-item" id="menuCopyWa">Salin Rekap WhatsApp</button>
+            <button type="button" class="menu-item" id="menuToggleTheme">Ganti Mode Gelap / Terang</button>
+            <div class="menu-sep"></div>
+            <button type="button" class="menu-item danger" id="menuResetDefault">Reset ke Data Awal Week 12</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="progress-wrap">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <nav class="nav-bar">
+      <div class="seg-tabs" role="tablist">
+        <button class="seg-tab active" data-filter="mine" role="tab">
+          Prioritas Saya <span class="count" id="countMine">4</span>
+        </button>
+        <button class="seg-tab" data-filter="all" role="tab">
+          Semua <span class="count" id="countAll">8</span>
+        </button>
+        <button class="seg-tab" data-filter="individu" role="tab">
+          Individu <span class="count" id="countIndividu">3</span>
+        </button>
+        <button class="seg-tab" data-filter="kelompok" role="tab">
+          Kelompok <span class="count" id="countKelompok">5</span>
+        </button>
+      </div>
+
+      <div class="view-switch">
+        <button class="view-btn active" data-layout="list">Daftar</button>
+        <button class="view-btn" data-layout="board">Prioritas</button>
+      </div>
+    </nav>
+
+    <main id="mainContent"></main>
+
+    <footer class="footer">
+      <span id="syncStatusText">Terhubung langsung ke Google Classroom &amp; Cloud</span>
+      <span>Klik tugas untuk lihat checklist &amp; detail</span>
+    </footer>
+  </div>
+
+  <!-- Add / Edit Modal -->
+  <div class="modal-backdrop" id="taskModalBackdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <h2 id="modalTitle">Tambah Tugas</h2>
+        <button class="close-btn" id="btnCloseModal" aria-label="Tutup">&times;</button>
+      </div>
+      <form id="taskForm" class="modal-body">
+        <input type="hidden" id="taskId" />
+        <div class="field-row">
+          <div class="field">
+            <label for="taskCourse">Mata Kuliah</label>
+            <select id="taskCourse" required>
+              <option value="MK 1">MK 1 — Organizational Behavior</option>
+              <option value="MK 2">MK 2 — Financial Management</option>
+              <option value="MK 3">MK 3 — Marketing Management</option>
+              <option value="MK 4">MK 4 — Operations &amp; Supply Chain</option>
+              <option value="MK 5">MK 5 — Decision Making &amp; Negotiation</option>
+              <option value="MK 6">MK 6 — Business Analytics</option>
+              <option value="P3MD">P3MD — Umum / Rabuan</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="taskType">Jenis</label>
+            <select id="taskType" required>
+              <option value="individu">Individu</option>
+              <option value="kelompok">Kelompok</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="taskTitle">Nama Tugas</label>
+          <input type="text" id="taskTitle" required />
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="taskOwner">Siapa yang Mengerjakan</label>
+            <select id="taskOwner" required>
+              <option value="mine">Saya (Individu / PIC)</option>
+              <option value="team">Teman Sindikat (Pantauan)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="taskPriority">Prioritas</label>
+            <select id="taskPriority" required>
+              <option value="1">1 — Kerjakan Dulu</option>
+              <option value="2">2 — Berikutnya</option>
+              <option value="3">3 — Nanti / Ringan</option>
+              <option value="4">4 — Pantauan Saja</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="taskDueDate">Tenggat (opsional)</label>
+            <input type="datetime-local" id="taskDueDate" />
+          </div>
+          <div class="field">
+            <label for="taskDueNote">Keterangan Tenggat</label>
+            <input type="text" id="taskDueNote" placeholder="Misal: Cek hari kelas MK 2" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="taskSubmission">Cara Pengumpulan</label>
+          <input type="text" id="taskSubmission" />
+        </div>
+        <div class="field">
+          <label for="taskNotes">Catatan Singkat</label>
+          <textarea id="taskNotes" rows="2"></textarea>
+        </div>
+        <div class="field">
+          <label for="taskSubtasks">Checklist Langkah (1 baris = 1 langkah)</label>
+          <textarea id="taskSubtasks" rows="4"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger-text" id="btnDeleteTask" style="display:none">Hapus</button>
+          <div class="modal-footer-right">
+            <button type="button" class="btn btn-secondary" id="btnCancelModal">Batal</button>
+            <button type="submit" class="btn btn-primary">Simpan</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const CACHE_KEY = 'p3md_online_cache_v1';
+      const API_URL = 'https://script.google.com/macros/s/AKfycbzR-3HGApxbDfC1aORxaH05MN2eTUX-sBHPiCZw0czdoepyrWO0ShlzdPUCH8mBOBtjxQ/exec';
+      const HAS_GAS = true;
+      // Pengganti runner Apps Script: panggil Apps Script lewat fetch tanpa cookie Google
+      function makeRunner(onOk, onFail) {
+        return new Proxy({}, {
+          get(_, prop) {
+            if (prop === 'withSuccessHandler') return (fn) => makeRunner(fn, onFail);
+            if (prop === 'withFailureHandler') return (fn) => makeRunner(onOk, fn);
+            return (...args) => {
+              fetch(API_URL, {
+                method: 'POST',
+                credentials: 'omit',
+                redirect: 'follow',
+                body: JSON.stringify({ fn: prop, args: args })
+              })
+                .then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+                .then((res) => { if (onOk) onOk(res); })
+                .catch((err) => { console.error(err); if (onFail) onFail(err); });
+            };
+          }
+        });
+      }
+      const RUN = makeRunner(null, null);
+
+      const PRIORITY_LABELS = {
+        1: 'Kerjakan Dulu',
+        2: 'Berikutnya',
+        3: 'Nanti / Ringan',
+        4: 'Pantauan'
+      };
+
+      function getDefaultTasks() {
+        return [
+          {
+            id: 'mk2-pre-w12',
+            course: 'MK 2',
+            title: 'Pre-Assignment Week 12',
+            type: 'individu',
+            owner: 'mine',
+            priority: 1,
+            dueDate: '',
+            dueNote: 'Cek hari kelas MK 2',
+            submission: 'Upload masing-masing (Name_Class_StudentID)',
+            notes: 'Tugas individu, belum ada tanggal di Classroom. Pastikan dulu jadwal kelas MK 2 minggu ini.',
+            done: false,
+            subtasks: [
+              { id: 's1', text: 'Pastikan hari & jam kelas MK 2 Week 12', done: false },
+              { id: 's2', text: 'Baca instruksi di Google Classroom', done: false },
+              { id: 's3', text: 'Kerjakan & upload (Name_Class_StudentID)', done: false }
+            ]
+          },
+          {
+            id: 'mk4-bw12-pre',
+            course: 'MK 4',
+            title: '[BW12] Pre Assignment',
+            type: 'kelompok',
+            owner: 'mine',
+            priority: 1,
+            dueDate: '2026-11-26T08:30',
+            dueNote: '',
+            submission: '1 perwakilan upload · Anggota lain klik Mark as done',
+            notes: 'Jatah tugas kelompok kamu untuk Sindikat 3. Cantumkan nama dan nomor peserta semua anggota di halaman pertama.',
+            done: false,
+            subtasks: [
+              { id: 's1', text: 'Baca instruksi & bahan [BW12] Pre Assignment', done: false },
+              { id: 's2', text: 'Susun draf analisis & rekomendasi', done: false },
+              { id: 's3', text: 'Minta review ke anggota Sindikat 3', done: false },
+              { id: 's4', text: 'Tulis nama & nomor peserta semua anggota di hal. 1', done: false },
+              { id: 's5', text: 'Upload ke GCR & info teman klik Mark as done', done: false }
+            ]
+          },
+          {
+            id: 'mk6-concept-map',
+            course: 'MK 6',
+            title: 'Pre-Assignment Session 12: Concept Map Generative AI',
+            type: 'individu',
+            owner: 'mine',
+            priority: 2,
+            dueDate: '2026-11-27T08:30',
+            dueNote: '',
+            submission: 'Upload foto concept map ke GCR',
+            notes: 'Tugas individu singkat. Acuan ada di lampiran 12-assignment.pdf.',
+            done: false,
+            subtasks: [
+              { id: 's1', text: 'Baca 12-assignment.pdf', done: false },
+              { id: 's2', text: 'Gambar concept map Generative AI', done: false },
+              { id: 's3', text: 'Foto & upload ke GCR', done: false }
+            ]
+          },
+          {
+            id: 'mk5-pre2-wijaya',
+            course: 'MK 5',
+            title: 'Pre-assignment 2: Individual Roleplay (PT Wijaya Farma Inovasi)',
+            type: 'individu',
+            owner: 'mine',
+            priority: 3,
+            dueDate: '2026-11-27T08:00',
+            dueNote: '',
+            submission: 'Tidak perlu upload · Klik Mark as done',
+            notes: 'Negosiasi individu. Jangan didiskusikan dengan siapa pun termasuk sesama sindikat.',
+            done: false,
+            subtasks: [
+              { id: 's1', text: 'Baca kasus PT Wijaya Farma Inovasi secara mandiri', done: false },
+              { id: 's2', text: 'Klik Mark as done di GCR', done: false }
+            ]
+          },
+          {
+            id: 'mk5-pre1-bimo',
+            course: 'MK 5',
+            title: 'Pre-Assignment 1 (Case Bimo)',
+            type: 'kelompok',
+            owner: 'team',
+            priority: 3,
+            dueDate: '2026-11-27T08:00',
+            dueNote: '',
+            submission: 'Tidak perlu upload · Klik Mark as done',
+            notes: 'Persiapan roleplay sindikat (Role_of_Bimo_BUMN.pdf). Bahas di internal Sindikat 3 saja.',
+            done: false,
+            subtasks: [
+              { id: 's1', text: 'Baca Role_of_Bimo_BUMN.pdf', done: false },
+              { id: 's2', text: 'Diskusi strategi internal Sindikat 3', done: false },
+              { id: 's3', text: 'Klik Mark as done di GCR', done: false }
+            ]
+          },
+          {
+            id: 'mk1-pre-w12',
+            course: 'MK 1',
+            title: '[Week 12] Pre-assignment',
+            type: 'kelompok',
+            owner: 'team',
+            priority: 4,
+            dueDate: '',
+            dueNote: 'Hari kelas Week 12 · 08.30',
+            submission: '1 perwakilan upload PDF',
+            notes: 'Dipegang teman sindikat (FAST beats SMART). Cek nama lengkap & NOSIS tercantum.',
+            done: false,
+            subtasks: [
+              { id: 's1', text: 'Cek nama lengkap & NOSIS (206) tercantum', done: false },
+              { id: 's2', text: 'Pastikan perwakilan sudah upload PDF', done: false }
+            ]
+          },
+          {
+            id: 'mk2-group-payout',
+            course: 'MK 2',
+            title: 'Week 12 In-Class Exercise: Payout Policy in Practice',
+            type: 'kelompok',
+            owner: 'team',
+            priority: 4,
+            dueDate: '',
+            dueNote: 'Sebelum kelas Week 12',
+            submission: '1 submission & presentasi kelompok',
+            notes: 'Dipegang teman sindikat. Sindikat 1–4 tetap terpisah (Sindikat 3 jalan sendiri).',
+            done: false,
+            subtasks: [
+              { id: 's1', text: 'Cek pembagian presentasi di Sindikat 3', done: false },
+              { id: 's2', text: 'Konfirmasi sudah submit sebelum kelas', done: false }
+            ]
+          },
+          {
+            id: 'mk3-pre-jollibee',
+            course: 'MK 3',
+            title: 'Week 12 Pre-Assignment (Jollibee)',
+            type: 'kelompok',
+            owner: 'team',
+            priority: 4,
+            dueDate: '2026-11-26T08:30',
+            dueNote: '',
+            submission: '1 perwakilan upload PDF',
+            notes: 'Dipegang teman sindikat (W12_PreClass Instructions_Jollibee.pdf).',
+            done: false,
+            subtasks: [
+              { id: 's1', text: 'Cek nama lengkap tercantum di dokumen', done: false },
+              { id: 's2', text: 'Konfirmasi perwakilan sudah upload PDF', done: false }
+            ]
+          }
+        ];
+      }
+
+      function loadLocalCache() {
+        try {
+          const raw = localStorage.getItem(CACHE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && Array.isArray(parsed.tasks)) return parsed;
+          }
+        } catch (e) {}
+        return { weekLabel: 'Week 12', theme: 'light', lastSyncedAt: '', tasks: getDefaultTasks() };
+      }
+
+      let state = loadLocalCache();
+      let currentFilter = 'mine';
+      let currentLayout = 'list';
+      let expandedIds = new Set();
+      let showTeamInMine = false;
+      let isSyncing = false;
+      let saveTimer = null;
+
+      function saveState() {
+        try { localStorage.setItem(CACHE_KEY, JSON.stringify(state)); } catch (e) {}
+        if (!HAS_GAS) return;
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => {
+          RUN.saveAppState(JSON.stringify(state));
+        }, 350);
+      }
+
+      function escapeHtml(str) {
+        return String(str || '')
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      }
+
+      function pad2(n) { return String(n).padStart(2, '0'); }
+      const DAY_SHORT = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+      const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
+      function parseDueDate(dueStr) {
+        if (!dueStr) return null;
+        const d = new Date(dueStr);
+        return Number.isNaN(d.getTime()) ? null : d;
+      }
+
+      function formatDue(task) {
+        const d = parseDueDate(task.dueDate);
+        if (!d) return { text: task.dueNote || 'Belum ada tanggal', tone: 'warn' };
+        const diffHours = (d.getTime() - Date.now()) / (1000 * 60 * 60);
+        const label = `${DAY_SHORT[d.getDay()]}, ${d.getDate()} ${MONTH_SHORT[d.getMonth()]} · ${pad2(d.getHours())}.${pad2(d.getMinutes())}`;
+        let tone = 'normal';
+        if (diffHours < 24) tone = 'urgent';
+        else if (diffHours < 72) tone = 'warn';
+        return { text: label, tone };
+      }
+
+      function showToast(msg) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        clearTimeout(showToast._timer);
+        showToast._timer = setTimeout(() => el.classList.remove('show'), 2300);
+      }
+
+      function applyTheme(theme) {
+        state.theme = theme === 'dark' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', state.theme);
+        saveState();
+      }
+
+      function sortTasks(list) {
+        return list.slice().sort((a, b) => {
+          if (a.done !== b.done) return a.done ? 1 : -1;
+          if (a.priority !== b.priority) return a.priority - b.priority;
+          return (parseDueDate(a.dueDate)?.getTime() || Infinity) - (parseDueDate(b.dueDate)?.getTime() || Infinity);
+        });
+      }
+
+      function renderHeader() {
+        const mine = state.tasks.filter((t) => t.owner === 'mine');
+        const mineDone = mine.filter((t) => t.done).length;
+        const pct = mine.length ? Math.round((mineDone / mine.length) * 100) : 0;
+
+        document.getElementById('weekTitle').textContent = `Tugas ${state.weekLabel}`;
+        document.getElementById('headerSummary').textContent =
+          `${mineDone} dari ${mine.length} tugas utama selesai · ${state.tasks.length} total aktif`;
+        document.getElementById('progressFill').style.width = `${pct}%`;
+
+        document.getElementById('countMine').textContent = String(mine.length);
+        document.getElementById('countAll').textContent = String(state.tasks.length);
+        document.getElementById('countIndividu').textContent = String(state.tasks.filter((t) => t.type === 'individu').length);
+        document.getElementById('countKelompok').textContent = String(state.tasks.filter((t) => t.type === 'kelompok').length);
+
+        const statusEl = document.getElementById('syncStatusText');
+        if (state.lastSyncedAt) {
+          const d = new Date(state.lastSyncedAt);
+          if (!Number.isNaN(d.getTime())) {
+            statusEl.textContent = `Tersinkron Google Classroom · ${d.getDate()} ${MONTH_SHORT[d.getMonth()]}, ${pad2(d.getHours())}.${pad2(d.getMinutes())}`;
+          }
+        }
+      }
+
+      function createTaskRow(task) {
+        const due = formatDue(task);
+        const isOpen = expandedIds.has(task.id);
+        const subs = task.subtasks || [];
+        const doneSubs = subs.filter((s) => s.done).length;
+
+        const row = document.createElement('div');
+        row.className = `task-row${task.done ? ' is-done' : ''}${isOpen ? ' is-open' : ''}`;
+
+        const roleText = task.type === 'individu'
+          ? 'Individu'
+          : task.owner === 'mine' ? 'Kelompok (Bagian saya)' : 'Kelompok (Teman sindikat)';
+        const stepText = subs.length ? `${doneSubs}/${subs.length} langkah` : '';
+        const gcrTag = task.doneInGcr ? `<span class="sep">·</span><span class="gcr-done-tag">Terkumpul di GCR</span>` : '';
+        const dueClass = task.done ? '' : due.tone === 'urgent' ? 'urgent' : due.tone === 'warn' ? 'warn' : '';
+
+        const subtasksHtml = subs.length
+          ? `<div class="subtask-list">${subs.map((s) => `
+              <label class="subtask-item${s.done ? ' done' : ''}">
+                <input type="checkbox" data-task-id="${escapeHtml(task.id)}" data-sub-id="${escapeHtml(s.id)}" ${s.done ? 'checked' : ''} />
+                <span>${escapeHtml(s.text)}</span>
+              </label>`).join('')}</div>`
+          : '';
+
+        const picBtn = task.type === 'kelompok'
+          ? `<button type="button" class="mini-btn" data-action="toggle-pic" data-id="${escapeHtml(task.id)}">${task.owner === 'mine' ? 'Pindah ke Pantauan' : 'Jadikan Bagian Saya'}</button>`
+          : '';
+        const gcrBtn = task.gcrLink
+          ? `<a class="mini-btn accent" href="${escapeHtml(task.gcrLink)}" target="_blank" rel="noopener noreferrer">Buka GCR &#8599;</a>`
+          : '';
+
+        row.innerHTML = `
+          <div class="task-row-summary" data-action="toggle-expand" data-id="${escapeHtml(task.id)}">
+            <button type="button" class="check-circle${task.done ? ' checked' : ''}" data-action="toggle-done" data-id="${escapeHtml(task.id)}">
+              ${task.done ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+            </button>
+            <div class="task-center">
+              <div class="task-top-line">
+                <span class="course-code">${escapeHtml(task.course)}</span>
+                <span class="task-name">${escapeHtml(task.title)}</span>
+              </div>
+              <div class="task-subline">
+                <span class="priority-dot-label p-text-${task.priority}">
+                  <span class="p-dot p${task.priority}"></span>
+                  ${escapeHtml(PRIORITY_LABELS[task.priority] || 'Prioritas')}
+                </span>
+                <span class="sep">·</span>
+                <span>${escapeHtml(roleText)}</span>
+                ${stepText ? `<span class="sep">·</span><span>${stepText}</span>` : ''}
+                ${gcrTag}
+              </div>
+            </div>
+            <div class="task-right">
+              <span class="due-text ${dueClass}">${escapeHtml(due.text)}</span>
+              <svg class="chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+          </div>
+          <div class="task-details">
+            <div class="detail-box">
+              ${task.notes ? `<p class="detail-note">${escapeHtml(task.notes)}</p>` : ''}
+              ${task.submission ? `<p class="detail-meta">Pengumpulan: ${escapeHtml(task.submission)}</p>` : ''}
+              ${subtasksHtml}
+              <div class="detail-actions">
+                <select class="mini-select" data-action="change-priority" data-id="${escapeHtml(task.id)}">
+                  <option value="1" ${task.priority === 1 ? 'selected' : ''}>Prioritas 1: Kerjakan Dulu</option>
+                  <option value="2" ${task.priority === 2 ? 'selected' : ''}>Prioritas 2: Berikutnya</option>
+                  <option value="3" ${task.priority === 3 ? 'selected' : ''}>Prioritas 3: Nanti / Ringan</option>
+                  <option value="4" ${task.priority === 4 ? 'selected' : ''}>Prioritas 4: Pantauan</option>
+                </select>
+                ${picBtn}
+                ${gcrBtn}
+                <button type="button" class="mini-btn" data-action="edit" data-id="${escapeHtml(task.id)}">Edit</button>
+              </div>
+            </div>
+          </div>
+        `;
+        return row;
+      }
+
+      function renderSection(title, note, tasks) {
+        const sec = document.createElement('section');
+        sec.className = 'group-section';
+        sec.innerHTML = `<div class="group-header"><h2 class="group-title">${escapeHtml(title)}</h2>${note ? `<span class="group-note">${escapeHtml(note)}</span>` : ''}</div>`;
+        if (!tasks.length) {
+          sec.innerHTML += `<div class="empty-box">Tidak ada tugas di bagian ini.</div>`;
+          return sec;
+        }
+        const stack = document.createElement('div');
+        stack.className = 'task-stack';
+        tasks.forEach((t) => stack.appendChild(createTaskRow(t)));
+        sec.appendChild(stack);
+        return sec;
+      }
+
+      function renderBoard(tasks) {
+        const grid = document.createElement('div');
+        grid.className = 'board-grid';
+        [1, 2, 3, 4].forEach((lvl) => {
+          const colTasks = tasks.filter((t) => t.priority === lvl);
+          const col = document.createElement('section');
+          col.className = 'board-col';
+          col.innerHTML = `<div class="board-col-head"><span class="board-col-name"><span class="p-dot p${lvl}"></span>${escapeHtml(PRIORITY_LABELS[lvl])}</span><span class="board-col-count">${colTasks.length}</span></div>`;
+          const list = document.createElement('div');
+          list.className = 'board-cards';
+          if (!colTasks.length) {
+            list.innerHTML = `<div style="font-size:12px;color:var(--text-muted);text-align:center;padding:14px 4px">Kosong</div>`;
+          } else {
+            colTasks.forEach((t) => {
+              const due = formatDue(t);
+              const card = document.createElement('div');
+              card.className = `board-card${t.done ? ' is-done' : ''}`;
+              card.innerHTML = `
+                <div class="board-card-top">
+                  <span class="course-code">${escapeHtml(t.course)} · ${t.type === 'individu' ? 'Individu' : t.owner === 'mine' ? 'PIC Saya' : 'Sindikat'}</span>
+                  <button type="button" class="check-circle${t.done ? ' checked' : ''}" style="width:18px;height:18px;margin:0" data-action="toggle-done" data-id="${escapeHtml(t.id)}">
+                    ${t.done ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+                  </button>
+                </div>
+                <h3 class="board-card-title">${escapeHtml(t.title)}</h3>
+                <div class="board-card-meta">${escapeHtml(due.text)}</div>
+                <div class="board-card-foot">
+                  <select class="mini-select" style="height:26px;font-size:11.5px;padding:0 6px" data-action="change-priority" data-id="${escapeHtml(t.id)}">
+                    <option value="1" ${t.priority === 1 ? 'selected' : ''}>1 · Kerjakan Dulu</option>
+                    <option value="2" ${t.priority === 2 ? 'selected' : ''}>2 · Berikutnya</option>
+                    <option value="3" ${t.priority === 3 ? 'selected' : ''}>3 · Nanti</option>
+                    <option value="4" ${t.priority === 4 ? 'selected' : ''}>4 · Pantauan</option>
+                  </select>
+                  <button type="button" class="mini-btn" style="height:26px;padding:0 8px" data-action="edit" data-id="${escapeHtml(t.id)}">Edit</button>
+                </div>`;
+              list.appendChild(card);
+            });
+          }
+          col.appendChild(list);
+          grid.appendChild(col);
+        });
+        return grid;
+      }
+
+      function renderMain() {
+        document.querySelector('.page').classList.toggle('wide', currentLayout === 'board');
+        const main = document.getElementById('mainContent');
+        main.innerHTML = '';
+
+        let filtered = state.tasks.slice();
+        if (currentFilter === 'mine') filtered = filtered.filter((t) => t.owner === 'mine');
+        else if (currentFilter === 'individu') filtered = filtered.filter((t) => t.type === 'individu');
+        else if (currentFilter === 'kelompok') filtered = filtered.filter((t) => t.type === 'kelompok');
+
+        if (currentLayout === 'board') {
+          main.appendChild(renderBoard(sortTasks(currentFilter === 'mine' ? state.tasks : filtered)));
+          return;
+        }
+
+        if (currentFilter === 'mine') {
+          main.appendChild(renderSection('Prioritas Saya', 'Individu + jatah kelompok saya', sortTasks(filtered)));
+          const teamTasks = sortTasks(state.tasks.filter((t) => t.owner !== 'mine'));
+          if (teamTasks.length) {
+            const wrap = document.createElement('section');
+            wrap.className = 'group-section';
+            if (!showTeamInMine) {
+              const btn = document.createElement('button');
+              btn.type = 'button';
+              btn.className = 'team-toggle-btn';
+              btn.innerHTML = `<span>Lihat ${teamTasks.length} tugas kelompok lain (dipegang teman sindikat)</span><span>Tampilkan</span>`;
+              btn.addEventListener('click', () => { showTeamInMine = true; renderMain(); });
+              wrap.appendChild(btn);
+            } else {
+              const head = document.createElement('div');
+              head.className = 'group-header';
+              head.innerHTML = `<h2 class="group-title">Pantauan Sindikat (${teamTasks.length})</h2><button type="button" class="mini-btn" id="btnHideTeam">Sembunyikan</button>`;
+              wrap.appendChild(head);
+              const stack = document.createElement('div');
+              stack.className = 'task-stack';
+              teamTasks.forEach((t) => stack.appendChild(createTaskRow(t)));
+              wrap.appendChild(stack);
+              head.querySelector('#btnHideTeam').addEventListener('click', () => { showTeamInMine = false; renderMain(); });
+            }
+            main.appendChild(wrap);
+          }
+          return;
+        }
+
+        if (currentFilter === 'all') {
+          const ind = sortTasks(state.tasks.filter((t) => t.type === 'individu'));
+          const grp = sortTasks(state.tasks.filter((t) => t.type === 'kelompok'));
+          main.appendChild(renderSection(`Individu (${ind.length})`, 'Dikerjakan sendiri', ind));
+          main.appendChild(renderSection(`Kelompok / Sindikat (${grp.length})`, '', grp));
+          return;
+        }
+
+        if (currentFilter === 'individu') {
+          main.appendChild(renderSection('Tugas Individu', '', sortTasks(filtered)));
+          return;
+        }
+
+        const myGrp = sortTasks(filtered.filter((t) => t.owner === 'mine'));
+        const otherGrp = sortTasks(filtered.filter((t) => t.owner !== 'mine'));
+        if (myGrp.length) main.appendChild(renderSection('Bagian Saya (PIC)', '', myGrp));
+        main.appendChild(renderSection('Dipegang Teman Sindikat', '', otherGrp));
+      }
+
+      function renderAll() {
+        renderHeader();
+        renderMain();
+      }
+
+      // Sync with Google Classroom directly via RUN
+      function normalizeTitleKey(course, title) {
+        return `${String(course || '').toLowerCase()}::${String(title || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()}`;
+      }
+
+      function findExistingTaskForGcr(remote) {
+        const byId = state.tasks.find((t) => t.gcrId && t.gcrId === remote.gcrId);
+        if (byId) return byId;
+        const remoteNorm = normalizeTitleKey(remote.course, remote.title);
+        const exact = state.tasks.find((t) => normalizeTitleKey(t.course, t.title) === remoteNorm);
+        if (exact) return exact;
+        const remoteClean = remoteNorm.split('::')[1] || '';
+        return state.tasks.find((t) => {
+          if (t.course !== remote.course) return false;
+          const localClean = normalizeTitleKey(t.course, t.title).split('::')[1] || '';
+          return Boolean(localClean && remoteClean && (localClean.includes(remoteClean) || remoteClean.includes(localClean)));
+        });
+      }
+
+      function runClassroomSync(silent) {
+        if (!HAS_GAS || isSyncing) return;
+        const btn = document.getElementById('btnSyncGcr');
+        const label = document.getElementById('syncBtnLabel');
+        isSyncing = true;
+        btn.classList.add('is-syncing');
+        btn.disabled = true;
+        label.textContent = 'Sync...';
+
+        RUN
+          .withSuccessHandler((data) => {
+            isSyncing = false;
+            btn.classList.remove('is-syncing');
+            btn.disabled = false;
+            label.textContent = 'Sync GCR';
+
+            if (!data || !data.ok) {
+              if (!silent) showToast(`Gagal sync: ${(data && data.error) || 'Cek izin Classroom API'}`);
+              return;
+            }
+
+            btn.classList.add('is-synced');
+            let added = 0;
+            let autoDone = 0;
+            const remoteTasks = Array.isArray(data.tasks) ? data.tasks : [];
+
+            remoteTasks.forEach((remote) => {
+              const existing = findExistingTaskForGcr(remote);
+              if (existing) {
+                existing.gcrId = remote.gcrId;
+                existing.gcrLink = remote.gcrLink || existing.gcrLink || '';
+                existing.doneInGcr = Boolean(remote.doneInGcr);
+                if (remote.doneInGcr && !existing.done) { existing.done = true; autoDone++; }
+                if (remote.dueDate) existing.dueDate = remote.dueDate;
+                if (!existing.notes && remote.notes) existing.notes = remote.notes;
+              } else {
+                const isInd = remote.type === 'individu';
+                state.tasks.push({
+                  id: `gcr-${remote.gcrId}`,
+                  gcrId: remote.gcrId,
+                  gcrLink: remote.gcrLink || '',
+                  course: remote.course || 'P3MD',
+                  title: remote.title || 'Tugas Baru',
+                  type: isInd ? 'individu' : 'kelompok',
+                  owner: isInd ? 'mine' : 'team',
+                  priority: isInd ? 2 : 4,
+                  dueDate: remote.dueDate || '',
+                  dueNote: remote.dueNote || '',
+                  submission: remote.submission || '',
+                  notes: remote.notes || '',
+                  done: Boolean(remote.doneInGcr),
+                  doneInGcr: Boolean(remote.doneInGcr),
+                  subtasks: [
+                    { id: `s-${Date.now()}-1`, text: 'Baca instruksi di Google Classroom', done: Boolean(remote.doneInGcr) },
+                    { id: `s-${Date.now()}-2`, text: isInd ? 'Kerjakan & submit di GCR' : 'Cek pembagian & upload kelompok', done: Boolean(remote.doneInGcr) }
+                  ]
+                });
+                added++;
+              }
+            });
+
+            if (data.weekLabel) state.weekLabel = data.weekLabel;
+            state.lastSyncedAt = data.syncedAt || new Date().toISOString();
+            saveState();
+            renderAll();
+
+            if (!silent || added > 0 || autoDone > 0) {
+              const parts = [];
+              if (added) parts.push(`${added} baru`);
+              if (autoDone) parts.push(`${autoDone} selesai`);
+              showToast(parts.length ? `Sync GCR: ${parts.join(', ')}` : `Semua tugas sinkron (${remoteTasks.length})`);
+            }
+          })
+          .withFailureHandler((err) => {
+            isSyncing = false;
+            btn.classList.remove('is-syncing');
+            btn.disabled = false;
+            label.textContent = 'Sync GCR';
+            if (!silent) showToast(`Error sync: ${err && err.message ? err.message : 'Coba lagi'}`);
+          })
+          .syncClassroomNow(12);
+      }
+
+      // Mutations & Modal
+      const taskBackdrop = document.getElementById('taskModalBackdrop');
+      function openTaskModal(id = null) {
+        const task = id ? state.tasks.find((t) => t.id === id) : null;
+        document.getElementById('modalTitle').textContent = task ? 'Edit Tugas' : 'Tambah Tugas';
+        document.getElementById('btnDeleteTask').style.display = task ? 'inline-flex' : 'none';
+        document.getElementById('taskId').value = task ? task.id : '';
+        document.getElementById('taskCourse').value = task ? task.course : 'MK 1';
+        document.getElementById('taskType').value = task ? task.type : 'individu';
+        document.getElementById('taskTitle').value = task ? task.title : '';
+        document.getElementById('taskOwner').value = task ? task.owner : 'mine';
+        document.getElementById('taskPriority').value = task ? String(task.priority) : '2';
+        document.getElementById('taskDueDate').value = task ? task.dueDate || '' : '';
+        document.getElementById('taskDueNote').value = task ? task.dueNote || '' : '';
+        document.getElementById('taskSubmission').value = task ? task.submission || '' : '';
+        document.getElementById('taskNotes').value = task ? task.notes || '' : '';
+        document.getElementById('taskSubtasks').value = task && task.subtasks ? task.subtasks.map((s) => s.text).join('\n') : '';
+        taskBackdrop.classList.add('open');
+      }
+      function closeTaskModal() { taskBackdrop.classList.remove('open'); }
+
+      document.getElementById('taskType').addEventListener('change', (e) => {
+        if (e.target.value === 'individu') document.getElementById('taskOwner').value = 'mine';
+      });
+
+      document.getElementById('taskForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const id = document.getElementById('taskId').value;
+        const lines = document.getElementById('taskSubtasks').value.split('\n').map((s) => s.trim()).filter(Boolean);
+        if (id) {
+          const ex = state.tasks.find((t) => t.id === id);
+          if (ex) {
+            const oldMap = new Map((ex.subtasks || []).map((s) => [s.text, s.done]));
+            ex.course = document.getElementById('taskCourse').value;
+            ex.type = document.getElementById('taskType').value;
+            ex.title = document.getElementById('taskTitle').value.trim();
+            ex.owner = ex.type === 'individu' ? 'mine' : document.getElementById('taskOwner').value;
+            ex.priority = Number(document.getElementById('taskPriority').value);
+            ex.dueDate = document.getElementById('taskDueDate').value;
+            ex.dueNote = document.getElementById('taskDueNote').value.trim();
+            ex.submission = document.getElementById('taskSubmission').value.trim();
+            ex.notes = document.getElementById('taskNotes').value.trim();
+            ex.subtasks = lines.map((text, idx) => ({ id: `s-${Date.now()}-${idx}`, text, done: oldMap.get(text) || false }));
+          }
+          showToast('Tugas diperbarui');
+        } else {
+          const type = document.getElementById('taskType').value;
+          state.tasks.push({
+            id: `task-${Date.now()}`,
+            course: document.getElementById('taskCourse').value,
+            type,
+            title: document.getElementById('taskTitle').value.trim(),
+            owner: type === 'individu' ? 'mine' : document.getElementById('taskOwner').value,
+            priority: Number(document.getElementById('taskPriority').value),
+            dueDate: document.getElementById('taskDueDate').value,
+            dueNote: document.getElementById('taskDueNote').value.trim(),
+            submission: document.getElementById('taskSubmission').value.trim(),
+            notes: document.getElementById('taskNotes').value.trim(),
+            done: false,
+            subtasks: lines.map((text, idx) => ({ id: `s-${Date.now()}-${idx}`, text, done: false }))
+          });
+          showToast('Tugas ditambahkan');
+        }
+        saveState();
+        closeTaskModal();
+        renderAll();
+      });
+
+      document.getElementById('btnDeleteTask').addEventListener('click', () => {
+        const id = document.getElementById('taskId').value;
+        if (!id || !confirm('Hapus tugas ini?')) return;
+        state.tasks = state.tasks.filter((t) => t.id !== id);
+        saveState();
+        closeTaskModal();
+        renderAll();
+        showToast('Tugas dihapus');
+      });
+
+      function copyWaRecap() {
+        const ind = state.tasks.filter((t) => t.type === 'individu');
+        const grp = state.tasks.filter((t) => t.type === 'kelompok');
+        const fmt = (t, i) => `${i + 1}. *${t.course}* - ${t.title}${t.done ? ' [Selesai]' : ''}\n   • Tenggat: ${formatDue(t).text}${t.submission ? `\n   • ${t.submission}` : ''}`;
+        const text = [
+          `*Rekap Tugas ${state.weekLabel} (Kelas B)*`, '',
+          '*TUGAS INDIVIDU*', ...(ind.length ? ind.map(fmt) : ['- Tidak ada']), '',
+          '*TUGAS KELOMPOK / SINDIKAT*', ...(grp.length ? grp.map(fmt) : ['- Tidak ada'])
+        ].join('\n');
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); showToast('Rekap WA disalin'); } catch (e) { showToast('Gagal menyalin'); }
+        document.body.removeChild(ta);
+      }
+
+      // Events
+      const moreMenu = document.getElementById('moreMenu');
+      document.getElementById('btnMoreMenu').addEventListener('click', (e) => { e.stopPropagation(); moreMenu.classList.toggle('open'); });
+      document.addEventListener('click', () => moreMenu.classList.remove('open'));
+
+      document.getElementById('menuCopyWa').addEventListener('click', copyWaRecap);
+      document.getElementById('menuToggleTheme').addEventListener('click', () => applyTheme(state.theme === 'dark' ? 'light' : 'dark'));
+      document.getElementById('menuResetDefault').addEventListener('click', () => {
+        if (!confirm('Reset ke data awal Week 12?')) return;
+        state.weekLabel = 'Week 12';
+        state.tasks = getDefaultTasks();
+        expandedIds.clear();
+        saveState();
+        renderAll();
+        showToast('Data dikembalikan ke Week 12');
+      });
+
+      document.getElementById('mainContent').addEventListener('click', (e) => {
+        const el = e.target.closest('[data-action]');
+        if (!el) return;
+        const action = el.getAttribute('data-action');
+        const id = el.getAttribute('data-id');
+        if (action === 'toggle-done') {
+          e.stopPropagation();
+          const t = state.tasks.find((x) => x.id === id);
+          if (t) { t.done = !t.done; saveState(); renderAll(); showToast(t.done ? `Selesai: ${t.course}` : `Dibuka lagi: ${t.course}`); }
+        } else if (action === 'toggle-expand') {
+          if (expandedIds.has(id)) expandedIds.delete(id); else expandedIds.add(id);
+          renderMain();
+        } else if (action === 'toggle-pic') {
+          const t = state.tasks.find((x) => x.id === id);
+          if (t && t.type === 'kelompok') {
+            t.owner = t.owner === 'mine' ? 'team' : 'mine';
+            if (t.owner === 'mine' && t.priority === 4) t.priority = 2;
+            if (t.owner === 'team' && t.priority <= 2) t.priority = 4;
+            saveState(); renderAll();
+          }
+        } else if (action === 'edit') {
+          openTaskModal(id);
+        }
+      });
+
+      document.getElementById('mainContent').addEventListener('change', (e) => {
+        if (e.target.matches('input[type="checkbox"][data-sub-id]')) {
+          const t = state.tasks.find((x) => x.id === e.target.getAttribute('data-task-id'));
+          const s = t && t.subtasks && t.subtasks.find((y) => y.id === e.target.getAttribute('data-sub-id'));
+          if (s) { s.done = !s.done; saveState(); renderAll(); }
+        } else if (e.target.matches('[data-action="change-priority"]')) {
+          const t = state.tasks.find((x) => x.id === e.target.getAttribute('data-id'));
+          if (t) { t.priority = Number(e.target.value); saveState(); renderAll(); }
+        }
+      });
+
+      document.getElementById('weekTitle').addEventListener('click', () => {
+        const next = prompt('Ubah label minggu (misal: Week 12, Week 13):', state.weekLabel);
+        if (next && next.trim()) { state.weekLabel = next.trim(); saveState(); renderHeader(); }
+      });
+
+      document.getElementById('btnAddTask').addEventListener('click', () => openTaskModal());
+      document.getElementById('btnCloseModal').addEventListener('click', closeTaskModal);
+      document.getElementById('btnCancelModal').addEventListener('click', closeTaskModal);
+      taskBackdrop.addEventListener('click', (e) => { if (e.target === taskBackdrop) closeTaskModal(); });
+      document.getElementById('btnSyncGcr').addEventListener('click', () => runClassroomSync(false));
+
+      document.querySelectorAll('.seg-tab').forEach((tab) => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.seg-tab').forEach((t) => t.classList.remove('active'));
+          tab.classList.add('active');
+          currentFilter = tab.getAttribute('data-filter');
+          renderMain();
+        });
+      });
+
+      document.querySelectorAll('.view-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.view-btn').forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentLayout = btn.getAttribute('data-layout');
+          renderMain();
+        });
+      });
+
+      // Init: render cache immediately, then load cloud state & auto-sync Classroom
+      applyTheme(state.theme);
+      renderAll();
+
+      if (HAS_GAS) {
+        RUN
+          .withSuccessHandler((res) => {
+            if (res && res.ok && res.stateJson) {
+              try {
+                const cloud = JSON.parse(res.stateJson);
+                if (cloud && Array.isArray(cloud.tasks)) {
+                  state = cloud;
+                  applyTheme(state.theme);
+                  renderAll();
+                }
+              } catch (e) {}
+            }
+            runClassroomSync(true);
+          })
+          .withFailureHandler(() => runClassroomSync(true))
+          .loadAppState();
+      }
+    })();
+  </script>
+</body>
+</html>
